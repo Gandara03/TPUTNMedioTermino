@@ -1,0 +1,854 @@
+{
+  "info": {
+    "name": "API Fintech - TP Medio Termino",
+    "description": "Coleccion para probar la API Fintech. Ejecutar las carpetas en orden (o Run collection): los ids creados se guardan solos en variables de coleccion (usuario_id, caja_id, cc_id, cuenta_vacia_id).\n\nNumeros de cuenta y DNI usan {{$timestamp}} para poder correrla varias veces sin chocar con datos existentes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "usuario_id",
+      "value": ""
+    },
+    {
+      "key": "caja_id",
+      "value": ""
+    },
+    {
+      "key": "cc_id",
+      "value": ""
+    },
+    {
+      "key": "cuenta_vacia_id",
+      "value": ""
+    },
+    {
+      "key": "dni_usado",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Usuarios",
+      "item": [
+        {
+          "name": "Crear usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/usuarios",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Gomez\",\n  \"dni\": \"{{$timestamp}}\",\n  \"email\": \"ana{{$timestamp}}@mail.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "const u = pm.response.json();",
+                  "pm.collectionVariables.set(\"usuario_id\", u.id);",
+                  "pm.collectionVariables.set(\"dni_usado\", u.dni);",
+                  "pm.test(\"Tiene id\", () => pm.expect(u.id).to.be.a(\"number\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/usuarios",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Es una lista\", () => pm.expect(pm.response.json()).to.be.an(\"array\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar usuario por id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/usuarios/{{usuario_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuario_id}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "ERROR - Usuario inexistente (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/usuarios/999999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "usuarios",
+                "999999"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "ERROR - DNI repetido (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/usuarios",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Copia\",\n  \"dni\": \"{{dni_usado}}\",\n  \"email\": \"otra{{$timestamp}}@mail.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Cuentas",
+      "item": [
+        {
+          "name": "Crear caja de ahorro",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cuentas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"CAJA_AHORRO\",\n  \"numero\": \"CA-{{$timestamp}}\",\n  \"usuarioId\": {{usuario_id}},\n  \"saldoInicial\": 154000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "const c = pm.response.json();",
+                  "pm.collectionVariables.set(\"caja_id\", c.id);",
+                  "pm.test(\"Es caja de ahorro\", () => pm.expect(c.tipo).to.eql(\"CAJA_AHORRO\"));",
+                  "pm.test(\"Limite = saldo\", () => pm.expect(c.limiteRetiro).to.eql(c.saldo));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear cuenta corriente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cuentas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"CUENTA_CORRIENTE\",\n  \"numero\": \"CC-{{$timestamp}}\",\n  \"usuarioId\": {{usuario_id}},\n  \"saldoInicial\": 5000,\n  \"descubierto\": 20000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "const c = pm.response.json();",
+                  "pm.collectionVariables.set(\"cc_id\", c.id);",
+                  "pm.test(\"Limite = saldo + descubierto\", () => pm.expect(c.limiteRetiro).to.eql(25000));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar cuentas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cuentas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar cuenta por id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cuentas/{{caja_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas",
+                "{{caja_id}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Saldo en dolares - oficial (API externa)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cuentas/{{caja_id}}/saldo-usd?casa=oficial",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas",
+                "{{caja_id}}",
+                "saldo-usd"
+              ],
+              "query": [
+                {
+                  "key": "casa",
+                  "value": "oficial"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Trae saldoUsd\", () => pm.expect(pm.response.json().saldoUsd).to.be.a(\"number\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Saldo en dolares - blue (API externa)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cuentas/{{caja_id}}/saldo-usd?casa=blue",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas",
+                "{{caja_id}}",
+                "saldo-usd"
+              ],
+              "query": [
+                {
+                  "key": "casa",
+                  "value": "blue"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar cuenta corriente (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cuentas/{{cc_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas",
+                "{{cc_id}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero\": \"CC-EDIT-{{$timestamp}}\",\n  \"descubierto\": 50000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Descubierto actualizado\", () => pm.expect(pm.response.json().descubierto).to.eql(50000));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear cuenta sin saldo (para borrar)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cuentas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"CAJA_AHORRO\",\n  \"numero\": \"BORRAR-{{$timestamp}}\",\n  \"usuarioId\": {{usuario_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"cuenta_vacia_id\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar cuenta - baja logica (204)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cuentas/{{cuenta_vacia_id}}?modo=logico",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas",
+                "{{cuenta_vacia_id}}"
+              ],
+              "query": [
+                {
+                  "key": "modo",
+                  "value": "logico"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar otra vez - ya dada de baja (404)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cuentas/{{cuenta_vacia_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas",
+                "{{cuenta_vacia_id}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Errores",
+      "item": [
+        {
+          "name": "Cuenta inexistente (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cuentas/999999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas",
+                "999999"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear cuenta sin datos obligatorios (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cuentas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"CAJA_AHORRO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Detalla los campos\", () => pm.expect(pm.response.json().campos).to.have.property(\"numero\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear cuenta con usuario inexistente (404)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cuentas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"CAJA_AHORRO\",\n  \"numero\": \"X-{{$timestamp}}\",\n  \"usuarioId\": 999999\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Descubierto en caja de ahorro (400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cuentas/{{caja_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas",
+                "{{caja_id}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numero\": \"CA-NUEVO-{{$timestamp}}\",\n  \"descubierto\": 1000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar cuenta con saldo (400)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cuentas/{{caja_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas",
+                "{{caja_id}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Modo de borrado invalido (400)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cuentas/{{caja_id}}?modo=cualquiera",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas",
+                "{{caja_id}}"
+              ],
+              "query": [
+                {
+                  "key": "modo",
+                  "value": "cualquiera"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tipo de dolar invalido (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cuentas/{{caja_id}}/saldo-usd?casa=trucho",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas",
+                "{{caja_id}}",
+                "saldo-usd"
+              ],
+              "query": [
+                {
+                  "key": "casa",
+                  "value": "trucho"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
