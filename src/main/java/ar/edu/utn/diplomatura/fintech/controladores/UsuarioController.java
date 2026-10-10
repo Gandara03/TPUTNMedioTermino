@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,14 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * Puerta de entrada HTTP para usuarios. Recibe la peticion, llama al service
- * y devuelve el resultado. No lleva reglas de negocio.
- *
- * Anotaciones de Swagger:
- * @Tag: agrupa los endpoints bajo "Usuarios" en la UI.
- * @Operation: titulo y descripcion de cada endpoint.
- * @ApiResponse: cada codigo HTTP posible y que devuelve.
- * @Parameter: describe un parametro de la URL.
+ * endpoints de Usuario
  */
 @Tag(name = "Usuarios")
 @RestController
@@ -64,12 +58,14 @@ public class UsuarioController {
             description = "Registra un usuario nuevo. El id lo genera la base; si se envia, se ignora.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Usuario creado"),
-            @ApiResponse(responseCode = "409", description = "Ya existe un usuario con ese DNI o email",
+            @ApiResponse(responseCode = "400", description = "Falta algun dato, el CUIT/CUIL no tiene 11 digitos o el email no es valido",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Ya existe un usuario con ese CUIT/CUIL o email",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Usuario crear(@RequestBody Usuario usuario) {
+    public Usuario crear(@Valid @RequestBody Usuario usuario) {
         return usuarioService.crear(usuario);
     }
 }

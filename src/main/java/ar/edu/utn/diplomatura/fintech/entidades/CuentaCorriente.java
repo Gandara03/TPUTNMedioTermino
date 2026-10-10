@@ -11,9 +11,8 @@ import lombok.ToString;
 import java.math.BigDecimal;
 
 /**
- * Cuenta corriente: permite retirar mas que el saldo, hasta el descubierto acordado.
- *
- * callSuper = true: equals, hashCode y toString incluyen tambien los atributos de Cuenta.
+ * Cuenta corriente: se puede retirar mas que el saldo, hasta el descubierto.
+ * - extends Cuenta: hereda atributos y operaciones.
  */
 @Entity
 @DiscriminatorValue("CUENTA_CORRIENTE")
@@ -23,7 +22,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class CuentaCorriente extends Cuenta {
 
-    // Monto que puede quedar en negativo. Columna que solo usan las cuentas corrientes.
+    // Monto que puede quedar en negativo
     @Column(precision = 15, scale = 2)
     private BigDecimal descubierto = BigDecimal.ZERO;
 

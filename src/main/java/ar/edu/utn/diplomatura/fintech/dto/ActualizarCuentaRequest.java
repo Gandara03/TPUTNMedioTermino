@@ -6,14 +6,6 @@ import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
 
-/**
- * JSON que llega en PUT /cuentas/{id}.
- *
- * Solo se puede cambiar el numero y el descubierto.
- * El SALDO no se edita por PUT a proposito: cambia unicamente con depositos
- * y retiros (si no, cualquiera podria "ponerse" plata).
- * El tipo y el titular tampoco cambian: seria otra cuenta.
- */
 @Schema(description = "Datos para actualizar una cuenta. El saldo, el tipo y el titular no se modifican")
 public record ActualizarCuentaRequest(
 

@@ -1,45 +1,26 @@
 spring:
   application:
     name: api-fintech
-
-  # --- Base de datos MySQL ---------------------------------------------------
-  # createDatabaseIfNotExist=true: si la base "fintech" no existe, la crea sola.
   datasource:
     url: jdbc:mysql://localhost:3306/fintech?createDatabaseIfNotExist=true&serverTimezone=America/Argentina/Buenos_Aires
     username: root
-    # Toma la clave de la variable de entorno DB_PASSWORD; si no existe, usa "root".
-    # Asi la clave real no queda escrita en el repositorio.
     password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-  # --- JPA / Hibernate -------------------------------------------------------
   jpa:
     hibernate:
-      # update: crea o actualiza las tablas segun las clases @Entity
-      # y NO borra los datos al reiniciar (a diferencia de create-drop).
+
       ddl-auto: update
-    # Muestra en la consola el SQL que se ejecuta.
+
     show-sql: true
-    # Desactiva "open session in view": la conexion a la base se cierra al terminar
-    # el service, no al terminar de armar la respuesta HTTP (buena practica).
     open-in-view: false
     properties:
-      # Entre corchetes porque la clave tiene un punto: es una sola propiedad de Hibernate.
       "[hibernate.format_sql]": true
-
-  # --- JSON ------------------------------------------------------------------
-  # Respuestas JSON indentadas, para que se lean mas facil.
   jackson:
     serialization:
       indent-output: true
 
-# --- Swagger / OpenAPI -------------------------------------------------------
 # Documentacion de la API en http://localhost:8080/swagger-ui.html
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
-
-# --- API externa: DolarApi -----------------------------------------------------
-# Cotizaciones del dolar. Se usa en GET /cuentas/{id}/saldo-usd
-dolarapi:
-  url: https://dolarapi.com/v1/dolares

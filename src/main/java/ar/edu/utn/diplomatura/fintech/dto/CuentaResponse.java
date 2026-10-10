@@ -7,12 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.math.BigDecimal;
 
-/**
- * JSON que devuelve la API para una cuenta.
- *
- * Elegimos que mostrar: el tipo, el limite de retiro calculado (polimorfismo)
- * y un resumen del titular, sin exponer la entidad completa.
- */
+
 @Schema(description = "Cuenta devuelta por la API")
 public record CuentaResponse(
 
@@ -42,10 +37,9 @@ public record CuentaResponse(
         String titular
 ) {
 
-    /** Convierte la entidad en el DTO de respuesta. */
+
     public static CuentaResponse desde(Cuenta cuenta) {
         TipoCuenta tipo = (cuenta instanceof CuentaCorriente) ? TipoCuenta.CUENTA_CORRIENTE : TipoCuenta.CAJA_AHORRO;
-        // instanceof con pattern matching (Java 16+): si es CuentaCorriente, la castea a "cc".
         BigDecimal descubierto = (cuenta instanceof CuentaCorriente cc) ? cc.getDescubierto() : null;
 
         return new CuentaResponse(

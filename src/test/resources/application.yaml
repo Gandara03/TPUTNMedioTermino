@@ -8,5 +8,4 @@ spring:
     password:
   jpa:
     hibernate:
-      # create-drop: crea las tablas al empezar y las borra al terminar.
       ddl-auto: create-drop

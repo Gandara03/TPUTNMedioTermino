@@ -14,7 +14,7 @@ classDiagram
         -Long id
         -String nombre
         -String apellido
-        -String dni
+        -String cuit
         -String email
         -List~Cuenta~ cuentas
         +agregarCuenta(Cuenta c) void
@@ -73,7 +73,7 @@ erDiagram
         BIGINT id PK
         VARCHAR nombre
         VARCHAR apellido
-        VARCHAR dni UK
+        VARCHAR cuit UK
         VARCHAR email UK
     }
     CUENTAS {

@@ -6,12 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-/**
- * Formato unico de todas las respuestas de error de la API.
- * Lo arma el ManejadorGlobalDeExcepciones.
- *
- * @JsonInclude(NON_NULL): si "campos" es null, no aparece en el JSON.
- */
 @Schema(description = "Respuesta de error")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ErrorResponse(

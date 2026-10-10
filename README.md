@@ -2,39 +2,29 @@
 
 TP de medio término de la Diplomatura en Desarrollo de Software FinTech (UTN / Codeki).
 
-Es una API REST hecha con Spring Boot que maneja usuarios y sus cuentas bancarias. Cada usuario puede tener varias cuentas, que pueden ser caja de ahorro o cuenta corriente. Los datos se guardan en MySQL.
+Es una API REST hecha con Spring Boot que maneja usuarios y sus cuentas bancarias. Cada usuario puede tener varias cuentas, que pueden ser caja de ahorro o cuenta corriente. Los datos se guardan en MySQL este se configura en el archivo YAML
 
-## Cómo correrlo
-
-Necesitás Java 21 (o más nuevo) y MySQL corriendo en el puerto 3306.
-
-1. Cloná el repo y abrí la carpeta `api-fintech`.
-2. Configurá la contraseña de MySQL. La conexión está en `src/main/resources/application.yaml`: el usuario es `root` y la contraseña no está escrita en el archivo, se toma de la variable de entorno `DB_PASSWORD` (si no está definida usa `root`).
-
-   En Windows, desde una terminal:
-
-   ```
-   setx DB_PASSWORD "tu_clave"
-   ```
-
-   Después hay que cerrar y volver a abrir la terminal o el IDE para que la tome. En Linux/Mac es `export DB_PASSWORD=tu_clave`.
-
+2. Configurá la contraseña de MySQL. La conexión está en `src/main/resources/application.yaml`
    La base `fintech` y las tablas se crean solas al arrancar.
-3. Levantá la app con `mvnw.cmd spring-boot:run` (o `./mvnw spring-boot:run` en Linux/Mac), o ejecutando `FintechApplication` desde el IDE.
 
 La API queda en `http://localhost:8080`.
 
-La documentación de Swagger está en `http://localhost:8080/swagger-ui.html`. Desde ahí se pueden probar todos los endpoints.
+La primera vez que arranca FintechApplication.java, si la base está vacía, se cargan datos de ejemplo (clase `CargaDatosIniciales`): 3 usuarios  con algunas cuentas, así se puede probar sin crear nada a mano.
+
+La documentación de Swagger está en `http://localhost:8080/swagger-ui.html`. Desde ahí se pueden probar todos los endpoints y con la coleccion de postman
 
 ## Endpoints de cuentas
 
 ### GET /cuentas
 
-Devuelve todas las cuentas activas.
+Devuelve todas las cuentas activas. Se puede filtrar por usuario con el query param `usuarioId`.
 
 ```
 GET http://localhost:8080/cuentas
+GET http://localhost:8080/cuentas?usuarioId=1
 ```
+
+Si el `usuarioId` no existe devuelve `404`.
 
 Respuesta:
 
@@ -48,7 +38,7 @@ Respuesta:
     "descubierto": null,
     "limiteRetiro": 10000.00,
     "usuarioId": 1,
-    "titular": "Ana Gomez"
+    "titular": "Alexis Gandara"
   }
 ]
 ```
@@ -127,17 +117,13 @@ Solo se pueden eliminar cuentas con saldo 0. Devuelve `204` si salió bien, `400
 
 Para poder crear cuentas hace falta un usuario, así que también están:
 
-- `POST /usuarios`: crea un usuario (`nombre`, `apellido`, `dni`, `email`). El DNI y el email no se pueden repetir.
+- `POST /usuarios`: crea un usuario (`nombre`, `apellido`, `cuit`, `email`). Todos son obligatorios, el CUIT/CUIL va sin guiones (11 dígitos) y el email tiene que ser válido (si no, `400`). El CUIT/CUIL y el email no se pueden repetir (`409`).
 - `GET /usuarios`: lista los usuarios.
 - `GET /usuarios/{id}`: busca un usuario por id.
 
-Y un endpoint que consume una API externa:
-
-- `GET /cuentas/{id}/saldo-usd?casa=oficial`: convierte el saldo de la cuenta a dólares usando la cotización de [DolarApi](https://dolarapi.com). `casa` puede ser `oficial`, `blue`, `bolsa`, etc. Si DolarApi no responde devuelve `503`.
-
 ## Entidades y relaciones
 
-**Usuario**: es el cliente. Tiene nombre, apellido, DNI y email (el DNI y el email son únicos).
+**Usuario**: es el cliente. Tiene nombre, apellido, CUIT/CUIL y email. Se identifica por el CUIT/CUIL, que es único (igual que el email).
 
 **Cuenta**: tiene número, saldo y un titular. Es una clase **abstracta** porque en la realidad no existe una "cuenta" a secas: siempre es de algún tipo. Por eso no se puede crear una `Cuenta` directamente, solo alguna de sus hijas:
 
@@ -168,7 +154,7 @@ El diagrama completo está en `docs/modelo-dominio.md`.
 El código está separado en capas: controladores, servicios y repositorios.
 
 - Para crear y devolver cuentas se usan DTOs, porque `Cuenta` es abstracta y no se puede armar directo desde el JSON.
-- Los errores se manejan en `ManejadorGlobalDeExcepciones`, con excepciones propias como `CuentaNoEncontradaException`. También hay `try/catch` en los servicios para los datos repetidos y en el cliente de DolarApi.
+- Los errores se manejan en `ManejadorGlobalDeExcepciones`, con excepciones propias como `CuentaNoEncontradaException`. También hay `try/catch` en los servicios para los datos repetidos (CUIT/CUIL, email o número de cuenta).
 
 ## Tests
 
@@ -182,13 +168,5 @@ No necesitan MySQL porque usan una base H2 en memoria.
 
 ## Colección de Postman
 
-En la carpeta `postman` está el archivo `API-Fintech.postman_collection.json` con todos los endpoints listos para probar.
+En la carpeta `postman` está el archivo `postman_collection.json` con todos los endpoints listos para probar.
 
-Para usarla:
-
-1. En Postman, ir a **Import** y elegir ese archivo.
-2. Con la app corriendo, hacer clic derecho sobre la colección → **Run collection** → **Run**.
-
-Los requests están ordenados en tres carpetas (Usuarios, Cuentas y Errores) y conviene correrlos en ese orden, porque los ids que se van creando se guardan en variables y los usan los requests siguientes. Cada uno tiene tests que verifican el código de respuesta.
-
-Si la API corre en otro puerto, se cambia en la variable `base_url` de la colección.

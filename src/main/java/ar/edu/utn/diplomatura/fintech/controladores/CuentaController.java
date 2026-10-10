@@ -4,7 +4,7 @@ import ar.edu.utn.diplomatura.fintech.dto.ActualizarCuentaRequest;
 import ar.edu.utn.diplomatura.fintech.dto.CrearCuentaRequest;
 import ar.edu.utn.diplomatura.fintech.dto.CuentaResponse;
 import ar.edu.utn.diplomatura.fintech.dto.ErrorResponse;
-import ar.edu.utn.diplomatura.fintech.dto.SaldoUsdResponse;
+import ar.edu.utn.diplomatura.fintech.entidades.Cuenta;
 import ar.edu.utn.diplomatura.fintech.servicios.CuentaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,8 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * Endpoints de cuentas. Recibe y devuelve DTOs, nunca la entidad directamente.
- * Las anotaciones @Operation / @ApiResponse documentan cada endpoint en Swagger.
+ * Endpoints de cuentas. trabajo con DTOS
  */
 @Tag(name = "Cuentas")
 @RestController
@@ -43,14 +42,23 @@ public class CuentaController {
     public CuentaController(CuentaService cuentaService) {
         this.cuentaService = cuentaService;
     }
-
-    /** stream().map(...): convierte cada entidad Cuenta en un CuentaResponse (Clase 12). */
     @Operation(summary = "Listar cuentas",
-            description = "Devuelve todas las cuentas activas. Las dadas de baja logica no se incluyen.")
-    @ApiResponse(responseCode = "200", description = "Lista de cuentas (puede estar vacia)")
+            description = "Devuelve las cuentas activas. Con ?usuarioId= filtra las de un usuario. "
+                    + "Las dadas de baja logica no se incluyen.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Lista de cuentas (puede estar vacia)"),
+            @ApiResponse(responseCode = "404", description = "El usuarioId indicado no existe",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @GetMapping
-    public List<CuentaResponse> listar() {
-        return cuentaService.listarTodas().stream()
+    public List<CuentaResponse> listar(
+            @Parameter(description = "Filtra por id del usuario titular (opcional)", example = "1")
+            @RequestParam(required = false) Long usuarioId) {
+
+        List<Cuenta> cuentas = (usuarioId == null)
+                ? cuentaService.listarTodas()
+                : cuentaService.listarPorUsuario(usuarioId);
+        return cuentas.stream()
                 .map(CuentaResponse::desde)
                 .toList();
     }
@@ -65,34 +73,6 @@ public class CuentaController {
     public CuentaResponse buscarPorId(@Parameter(description = "Id de la cuenta", example = "1") @PathVariable Long id) {
         return CuentaResponse.desde(cuentaService.buscarPorId(id));
     }
-
-    /**
-     * GET /cuentas/1/saldo-usd?casa=blue
-     * Consume la API externa DolarApi para convertir el saldo a dolares.
-     */
-    @Operation(summary = "Saldo en dolares (API externa)",
-            description = "Convierte el saldo de la cuenta a USD con la cotizacion de venta obtenida de "
-                    + "DolarApi (https://dolarapi.com).")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Saldo convertido"),
-            @ApiResponse(responseCode = "400", description = "Tipo de dolar invalido",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "404", description = "La cuenta no existe o fue dada de baja",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "503", description = "DolarApi no respondio",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    })
-    @GetMapping("/{id}/saldo-usd")
-    public SaldoUsdResponse saldoEnDolares(
-            @Parameter(description = "Id de la cuenta", example = "1") @PathVariable Long id,
-            @Parameter(description = "Tipo de dolar",
-                    schema = @Schema(allowableValues = {"oficial", "blue", "bolsa", "contadoconliqui",
-                            "mayorista", "cripto", "tarjeta"}))
-            @RequestParam(defaultValue = "oficial") String casa) {
-        return cuentaService.consultarSaldoEnDolares(id, casa);
-    }
-
-    /** @Valid: chequea las anotaciones del DTO antes de entrar. Si falla, responde 400. */
     @Operation(summary = "Crear cuenta",
             description = "Crea una CAJA_AHORRO o una CUENTA_CORRIENTE para un usuario existente. "
                     + "El descubierto solo aplica a cuentas corrientes.")

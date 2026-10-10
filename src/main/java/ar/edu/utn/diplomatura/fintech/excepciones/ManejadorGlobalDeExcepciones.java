@@ -11,11 +11,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Atrapa las excepciones que salen de CUALQUIER controlador y las convierte
- * en una respuesta HTTP prolija (ErrorResponse), en vez de un error 500 con el stacktrace.
- *
- * @RestControllerAdvice: aplica a todos los @RestController.
- * @ExceptionHandler(X.class): este metodo se ejecuta cuando se lanza una X.
+ * Atrapa las excepciones de todos los controladores y devuelve un ErrorResponse
+ * con el codigo HTTP que corresponde, en vez de un error 500.
  */
 @RestControllerAdvice
 public class ManejadorGlobalDeExcepciones {
@@ -26,16 +23,10 @@ public class ManejadorGlobalDeExcepciones {
         return respuesta(HttpStatus.NOT_FOUND, ex.getMessage(), null);
     }
 
-    /** 409: dato unico repetido (numero de cuenta, DNI, email). */
+    /** 409: dato unico repetido (numero de cuenta, CUIT/CUIL, email). */
     @ExceptionHandler(RecursoDuplicadoException.class)
     public ResponseEntity<ErrorResponse> duplicado(RecursoDuplicadoException ex) {
         return respuesta(HttpStatus.CONFLICT, ex.getMessage(), null);
-    }
-
-    /** 503: fallo una API externa (DolarApi). El problema no es del cliente: que reintente despues. */
-    @ExceptionHandler(ServicioExternoException.class)
-    public ResponseEntity<ErrorResponse> servicioExterno(ServicioExternoException ex) {
-        return respuesta(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), null);
     }
 
     /** 400: se quiso retirar mas de lo permitido. */

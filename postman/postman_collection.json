@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "API Fintech - TP Medio Termino",
-    "description": "Coleccion para probar la API Fintech. Ejecutar las carpetas en orden (o Run collection): los ids creados se guardan solos en variables de coleccion (usuario_id, caja_id, cc_id, cuenta_vacia_id).\n\nNumeros de cuenta y DNI usan {{$timestamp}} para poder correrla varias veces sin chocar con datos existentes.",
+    "description": "Coleccion para probar la API Fintech. Ejecutar en orden (Run collection): los ids creados se guardan en variables (usuario_id, caja_id, cc_id, cuenta_vacia_id).\n\nLos datos son fijos (CUIT, email y numeros de cuenta), asi que esta pensada para correrse con la base recien creada. Para volver a correrla: DROP DATABASE fintech; y reiniciar la app.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -26,7 +26,7 @@
       "value": ""
     },
     {
-      "key": "dni_usado",
+      "key": "cuit_usado",
       "value": ""
     }
   ],
@@ -56,7 +56,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Gomez\",\n  \"dni\": \"{{$timestamp}}\",\n  \"email\": \"ana{{$timestamp}}@mail.com\"\n}",
+              "raw": "{\n  \"nombre\": \"Martina\",\n  \"apellido\": \"López\",\n  \"cuit\": \"27384567210\",\n  \"email\": \"martina.lopez@gmail.com\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -73,7 +73,7 @@
                   "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
                   "const u = pm.response.json();",
                   "pm.collectionVariables.set(\"usuario_id\", u.id);",
-                  "pm.collectionVariables.set(\"dni_usado\", u.dni);",
+                  "pm.collectionVariables.set(\"cuit_usado\", u.cuit);",
                   "pm.test(\"Tiene id\", () => pm.expect(u.id).to.be.a(\"number\"));"
                 ]
               }
@@ -168,7 +168,7 @@
           ]
         },
         {
-          "name": "ERROR - DNI repetido (409)",
+          "name": "ERROR - CUIT repetido (409)",
           "request": {
             "method": "POST",
             "header": [
@@ -189,7 +189,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Copia\",\n  \"dni\": \"{{dni_usado}}\",\n  \"email\": \"otra{{$timestamp}}@mail.com\"\n}",
+              "raw": "{\n  \"nombre\": \"Martín\",\n  \"apellido\": \"López\",\n  \"cuit\": \"{{cuit_usado}}\",\n  \"email\": \"martin.lopez@gmail.com\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -208,6 +208,48 @@
               }
             }
           ]
+        },
+        {
+          "name": "ERROR - Usuario sin datos (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Detalla los campos\", () => pm.expect(pm.response.json().campos).to.have.property(\"nombre\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apellido\": \"Pérez\",\n  \"cuit\": \"20-3812\",\n  \"email\": \"perez.gmail.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/usuarios",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            }
+          }
         }
       ]
     },
@@ -236,7 +278,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"CAJA_AHORRO\",\n  \"numero\": \"CA-{{$timestamp}}\",\n  \"usuarioId\": {{usuario_id}},\n  \"saldoInicial\": 154000\n}",
+              "raw": "{\n  \"tipo\": \"CAJA_AHORRO\",\n  \"numero\": \"0004-0001\",\n  \"usuarioId\": {{usuario_id}},\n  \"saldoInicial\": 85000.5\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -282,7 +324,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"CUENTA_CORRIENTE\",\n  \"numero\": \"CC-{{$timestamp}}\",\n  \"usuarioId\": {{usuario_id}},\n  \"saldoInicial\": 5000,\n  \"descubierto\": 20000\n}",
+              "raw": "{\n  \"tipo\": \"CUENTA_CORRIENTE\",\n  \"numero\": \"0004-0002\",\n  \"usuarioId\": {{usuario_id}},\n  \"saldoInicial\": 12000,\n  \"descubierto\": 30000\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -299,7 +341,7 @@
                   "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
                   "const c = pm.response.json();",
                   "pm.collectionVariables.set(\"cc_id\", c.id);",
-                  "pm.test(\"Limite = saldo + descubierto\", () => pm.expect(c.limiteRetiro).to.eql(25000));"
+                  "pm.test(\"Limite = saldo + descubierto\", () => pm.expect(c.limiteRetiro).to.eql(42000));"
                 ]
               }
             }
@@ -334,6 +376,40 @@
           ]
         },
         {
+          "name": "Listar cuentas de un usuario (?usuarioId=)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Todas son del usuario\", () => pm.response.json().forEach(c => pm.expect(c.usuarioId).to.eql(Number(pm.collectionVariables.get(\"usuario_id\")))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cuentas?usuarioId={{usuario_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuentas"
+              ],
+              "query": [
+                {
+                  "key": "usuarioId",
+                  "value": "{{usuario_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Buscar cuenta por id",
           "request": {
             "method": "GET",
@@ -346,79 +422,6 @@
               "path": [
                 "cuentas",
                 "{{caja_id}}"
-              ]
-            },
-            "description": ""
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Saldo en dolares - oficial (API externa)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/cuentas/{{caja_id}}/saldo-usd?casa=oficial",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "cuentas",
-                "{{caja_id}}",
-                "saldo-usd"
-              ],
-              "query": [
-                {
-                  "key": "casa",
-                  "value": "oficial"
-                }
-              ]
-            },
-            "description": ""
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
-                  "pm.test(\"Trae saldoUsd\", () => pm.expect(pm.response.json().saldoUsd).to.be.a(\"number\"));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Saldo en dolares - blue (API externa)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/cuentas/{{caja_id}}/saldo-usd?casa=blue",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "cuentas",
-                "{{caja_id}}",
-                "saldo-usd"
-              ],
-              "query": [
-                {
-                  "key": "casa",
-                  "value": "blue"
-                }
               ]
             },
             "description": ""
@@ -458,7 +461,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"numero\": \"CC-EDIT-{{$timestamp}}\",\n  \"descubierto\": 50000\n}",
+              "raw": "{\n  \"numero\": \"0004-0003\",\n  \"descubierto\": 60000\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -473,7 +476,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
-                  "pm.test(\"Descubierto actualizado\", () => pm.expect(pm.response.json().descubierto).to.eql(50000));"
+                  "pm.test(\"Descubierto actualizado\", () => pm.expect(pm.response.json().descubierto).to.eql(60000));"
                 ]
               }
             }
@@ -501,7 +504,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"CAJA_AHORRO\",\n  \"numero\": \"BORRAR-{{$timestamp}}\",\n  \"usuarioId\": {{usuario_id}}\n}",
+              "raw": "{\n  \"tipo\": \"CAJA_AHORRO\",\n  \"numero\": \"0004-0004\",\n  \"usuarioId\": {{usuario_id}}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -685,7 +688,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"CAJA_AHORRO\",\n  \"numero\": \"X-{{$timestamp}}\",\n  \"usuarioId\": 999999\n}",
+              "raw": "{\n  \"tipo\": \"CAJA_AHORRO\",\n  \"numero\": \"0099-0001\",\n  \"usuarioId\": 999999\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -728,7 +731,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"numero\": \"CA-NUEVO-{{$timestamp}}\",\n  \"descubierto\": 1000\n}",
+              "raw": "{\n  \"numero\": \"0004-0001\",\n  \"descubierto\": 10000\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -795,42 +798,6 @@
                 {
                   "key": "modo",
                   "value": "cualquiera"
-                }
-              ]
-            },
-            "description": ""
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Tipo de dolar invalido (400)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/cuentas/{{caja_id}}/saldo-usd?casa=trucho",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "cuentas",
-                "{{caja_id}}",
-                "saldo-usd"
-              ],
-              "query": [
-                {
-                  "key": "casa",
-                  "value": "trucho"
                 }
               ]
             },

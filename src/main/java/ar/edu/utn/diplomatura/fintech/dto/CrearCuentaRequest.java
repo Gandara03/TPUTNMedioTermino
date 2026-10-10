@@ -8,21 +8,6 @@ import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
 
-/**
- * JSON que llega en POST /cuentas.
- *
- * Por que un DTO y no la entidad Cuenta directamente?
- * Cuenta es ABSTRACTA: Jackson no puede hacer "new Cuenta()" al leer el JSON.
- * Con este DTO recibimos el "tipo" y el service decide si crea una
- * CajaDeAhorro o una CuentaCorriente.
- * Ademas el cliente manda solo el id del usuario, no el usuario entero.
- *
- * Es un record (Java 16+): clase inmutable con constructor, getters
- * (tipo(), numero(), ...), equals, hashCode y toString generados.
- *
- * Las anotaciones de jakarta.validation se chequean con @Valid en el controlador.
- * @Schema (Swagger) documenta cada campo con descripcion y ejemplo.
- */
 @Schema(description = "Datos para crear una cuenta")
 public record CrearCuentaRequest(
 

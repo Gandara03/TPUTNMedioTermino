@@ -23,7 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Tests unitarios del UsuarioService con el repositorio mockeado.
+ * Tests de UsuarioService con el repositorio mockeado.
  */
 @ExtendWith(MockitoExtension.class)
 class UsuarioServiceTest {
@@ -37,15 +37,12 @@ class UsuarioServiceTest {
     @Test
     @DisplayName("Buscar por id: devuelve el usuario si existe")
     void buscarUsuarioExistente() {
-        // Given
-        Usuario ana = new Usuario("Ana", "Gomez", "30111222", "ana@mail.com");
-        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(ana));
+        Usuario sofia = new Usuario("Sofía", "Martínez", "27356789011", "sofia.martinez@gmail.com");
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(sofia));
 
-        // When
         Usuario encontrado = usuarioService.buscarPorId(1L);
 
-        // Then
-        assertSame(ana, encontrado);
+        assertSame(sofia, encontrado);
     }
 
     @Test
@@ -61,28 +58,24 @@ class UsuarioServiceTest {
     @Test
     @DisplayName("Crear: ignora el id que venga en el JSON (lo genera la base)")
     void crearIgnoraElId() {
-        // Given: viene un id "trucho" en el pedido
-        Usuario nuevo = new Usuario("Ana", "Gomez", "30111222", "ana@mail.com");
+        Usuario nuevo = new Usuario("Sofía", "Martínez", "27356789011", "sofia.martinez@gmail.com");
         nuevo.setId(500L);
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        // When
         usuarioService.crear(nuevo);
 
-        // Then: se guardo con id null
         assertNull(nuevo.getId());
         verify(usuarioRepository).save(nuevo);
     }
 
     @Test
-    @DisplayName("Crear: DNI o email repetido -> el try/catch lanza RecursoDuplicadoException")
+    @DisplayName("Crear: CUIT/CUIL o email repetido -> el try/catch lanza RecursoDuplicadoException")
     void crearUsuarioDuplicado() {
-        // Given: la base rechaza el INSERT por la restriccion UNIQUE
-        Usuario repetido = new Usuario("Ana", "Gomez", "30111222", "ana@mail.com");
+        // la base rechaza el INSERT por CUIT/email repetido
+        Usuario repetido = new Usuario("Sofía", "Martínez", "27356789011", "sofia.martinez@gmail.com");
         when(usuarioRepository.save(any(Usuario.class)))
-                .thenThrow(new DataIntegrityViolationException("Duplicate entry '30111222'"));
+                .thenThrow(new DataIntegrityViolationException("Duplicate entry '27356789011'"));
 
-        // When + Then
         assertThrows(RecursoDuplicadoException.class, () -> usuarioService.crear(repetido));
     }
 }

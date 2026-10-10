@@ -1,8 +1,7 @@
 package ar.edu.utn.diplomatura.fintech.excepciones;
 
 /**
- * Excepcion custom: se lanza cuando se busca una cuenta por id y no existe.
- * La atrapa el ManejadorGlobalDeExcepciones y responde 404.
+ * Excepcion custom: la cuenta no existe o fue dada de baja -> 404.
  */
 public class CuentaNoEncontradaException extends RuntimeException {
 

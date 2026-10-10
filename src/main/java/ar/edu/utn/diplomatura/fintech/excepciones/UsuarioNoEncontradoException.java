@@ -1,10 +1,7 @@
 package ar.edu.utn.diplomatura.fintech.excepciones;
 
 /**
- * Excepcion custom: se lanza cuando se busca un usuario por id y no existe.
- *
- * Extiende RuntimeException (unchecked): no obliga a poner try/catch en cada
- * llamada; la atrapa el ManejadorGlobalDeExcepciones y responde 404.
+ * Excepcion custom: el usuario no existe -> 404.
  */
 public class UsuarioNoEncontradoException extends RuntimeException {
 

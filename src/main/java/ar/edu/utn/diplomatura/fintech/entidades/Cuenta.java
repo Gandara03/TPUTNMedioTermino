@@ -20,14 +20,10 @@ import lombok.ToString;
 import java.math.BigDecimal;
 
 /**
- * Cuenta bancaria. Es ABSTRACTA: no se puede crear una "Cuenta" a secas,
+ * Cuenta bancaria. Es ABSTRACTA: no se puede crear una "Cuenta" ,
  * solo una CajaDeAhorro o una CuentaCorriente (herencia).
- * Implementa la interfaz Operable: cumple el contrato depositar / retirar / limite.
- *
- * @Inheritance(SINGLE_TABLE): todas las subclases se guardan en UNA sola tabla "cuentas".
- * @DiscriminatorColumn: columna que indica de que subclase es cada fila
- *   (CAJA_AHORRO o CUENTA_CORRIENTE, definido con @DiscriminatorValue en cada hija).
- */
+ * Implementa la interfaz: cumple el contrato depositar / retirar / limite.
+ **/
 @Entity
 @Table(name = "cuentas")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -42,27 +38,14 @@ public abstract class Cuenta implements Operable {
 
     @Column(nullable = false, unique = true)
     private String numero;
-
-    /**
-     * BigDecimal y no double: con double las cuentas de plata tienen errores
-     * de redondeo (0.1 + 0.2 = 0.30000000000000004).
-     * precision = 15, scale = 2: hasta 15 digitos, 2 de ellos decimales -> DECIMAL(15,2).
-     */
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal saldo = BigDecimal.ZERO;
 
-    /**
-     * Baja logica: en vez de borrar la fila, se marca como inactiva.
-     * columnDefinition "default true": si la tabla ya tenia cuentas, al crear esta
-     * columna quedan activas (sin el default, MySQL las pondria en false).
-     */
     @Column(nullable = false, columnDefinition = "boolean default true")
     private boolean activa = true;
 
     /**
-     * Muchas cuentas pertenecen a UN usuario (muchos a uno).
-     * Este es el lado "dueño" de la relacion: guarda la columna usuario_id (clave foranea).
-     * optional = false: toda cuenta tiene que tener titular.
+     * Muchas cuentas pertenecen a UN usuario (many to one).
      */
     @ManyToOne(optional = false)
     @JoinColumn(name = "usuario_id", nullable = false)
@@ -76,7 +59,7 @@ public abstract class Cuenta implements Operable {
     }
 
     /**
-     * Cada tipo de cuenta define cuanto se puede retirar (polimorfismo).
+     * Cada tipo de cuenta define cuanto se puede retirar .
      * Es abstracto: lo implementan CajaDeAhorro y CuentaCorriente.
      */
     @Override
@@ -91,8 +74,7 @@ public abstract class Cuenta implements Operable {
     @Override
     public void retirar(BigDecimal monto) {
         validarMontoPositivo(monto);
-        // compareTo devuelve > 0 si monto es mayor que el limite.
-        BigDecimal limite = calcularLimiteRetiro();   // polimorfismo: cada subclase lo calcula distinto
+        BigDecimal limite = calcularLimiteRetiro();   //  cada subclase lo calcula distinto
         if (monto.compareTo(limite) > 0) {
             throw new SaldoInsuficienteException(monto, limite);
         }
