@@ -20,20 +20,20 @@ public record CuentaResponse(
         @Schema(description = "Numero de cuenta", example = "0001-0002")
         String numero,
 
-        @Schema(description = "Saldo actual", example = "5000.00")
+        @Schema(description = "Saldo actual", example = "8400.00")
         BigDecimal saldo,
 
-        @Schema(description = "Descubierto permitido (null en cajas de ahorro)", example = "20000.00", nullable = true)
+        @Schema(description = "Descubierto permitido (null en cajas de ahorro)", example = "50000.00", nullable = true)
         BigDecimal descubierto,
 
         @Schema(description = "Cuanto se puede retirar: saldo (caja de ahorro) o saldo + descubierto (cuenta corriente)",
-                example = "25000.00")
+                example = "58400.00")
         BigDecimal limiteRetiro,
 
         @Schema(description = "Id del usuario titular", example = "1")
         Long usuarioId,
 
-        @Schema(description = "Nombre y apellido del titular", example = "Ana Gomez")
+        @Schema(description = "Nombre y apellido del titular", example = "Alexis Gandara")
         String titular
 ) {
 

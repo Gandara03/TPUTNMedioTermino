@@ -147,8 +147,6 @@ Usuario 1 ──── * Cuenta (abstracta)
                     └── CuentaCorriente
 ```
 
-El diagrama completo está en `docs/modelo-dominio.md`.
-
 ## Cómo está armado
 
 El código está separado en capas: controladores, servicios y repositorios.

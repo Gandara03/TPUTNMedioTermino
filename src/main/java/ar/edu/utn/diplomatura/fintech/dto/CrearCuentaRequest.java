@@ -16,7 +16,7 @@ public record CrearCuentaRequest(
         @NotNull(message = "El tipo es obligatorio (CAJA_AHORRO o CUENTA_CORRIENTE)")
         TipoCuenta tipo,
 
-        @Schema(description = "Numero de cuenta, unico", example = "0001-0002",
+        @Schema(description = "Numero de cuenta, unico", example = "0001-0003",
                 requiredMode = Schema.RequiredMode.REQUIRED)
         @NotBlank(message = "El numero de cuenta es obligatorio")
         String numero,
@@ -26,12 +26,12 @@ public record CrearCuentaRequest(
         @NotNull(message = "El id del usuario titular es obligatorio")
         Long usuarioId,
 
-        @Schema(description = "Saldo inicial. Si no se envia, la cuenta arranca en 0", example = "5000")
+        @Schema(description = "Saldo inicial. Si no se envia, la cuenta arranca en 0", example = "8400")
         @PositiveOrZero(message = "El saldo inicial no puede ser negativo")
         BigDecimal saldoInicial,
 
         @Schema(description = "Descubierto permitido. Solo para CUENTA_CORRIENTE; si no se envia, es 0",
-                example = "20000")
+                example = "50000")
         @PositiveOrZero(message = "El descubierto no puede ser negativo")
         BigDecimal descubierto
 ) {

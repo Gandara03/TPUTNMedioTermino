@@ -9,12 +9,12 @@ import java.math.BigDecimal;
 @Schema(description = "Datos para actualizar una cuenta. El saldo, el tipo y el titular no se modifican")
 public record ActualizarCuentaRequest(
 
-        @Schema(description = "Nuevo numero de cuenta, unico", example = "0001-0099",
+        @Schema(description = "Nuevo numero de cuenta, unico", example = "0001-0004",
                 requiredMode = Schema.RequiredMode.REQUIRED)
         @NotBlank(message = "El numero de cuenta es obligatorio")
         String numero,
 
-        @Schema(description = "Nuevo descubierto. Solo valido para CUENTA_CORRIENTE", example = "50000")
+        @Schema(description = "Nuevo descubierto. Solo valido para CUENTA_CORRIENTE", example = "60000")
         @PositiveOrZero(message = "El descubierto no puede ser negativo")
         BigDecimal descubierto
 ) {

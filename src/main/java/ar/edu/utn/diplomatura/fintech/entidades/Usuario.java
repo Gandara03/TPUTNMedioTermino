@@ -38,25 +38,25 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Schema(description = "Nombre", example = "Ana", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "Nombre", example = "Alexis", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "El nombre es obligatorio")
     @Column(nullable = false)
     private String nombre;
 
-    @Schema(description = "Apellido", example = "Gomez", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "Apellido", example = "Gandara", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "El apellido es obligatorio")
     @Column(nullable = false)
     private String apellido;
 
     // CUIT/CUIL: 11 digitos sin guiones, no se puede repetir
-    @Schema(description = "CUIT/CUIL sin guiones (11 digitos), unico", example = "27301112225",
+    @Schema(description = "CUIT/CUIL sin guiones (11 digitos), unico", example = "20450703398",
             requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "El CUIT/CUIL es obligatorio")
     @Pattern(regexp = "\\d{11}", message = "El CUIT/CUIL debe tener 11 digitos, sin guiones")
     @Column(nullable = false, unique = true)
     private String cuit;
 
-    @Schema(description = "Email, unico", example = "ana@mail.com", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "Email, unico", example = "alexis20143@gmail.com", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "El email es obligatorio")
     @Email(message = "El email no tiene un formato valido")
     @Column(nullable = false, unique = true)
